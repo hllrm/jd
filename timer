@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JD Test Timer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .timer-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .title {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-info {
+            margin-bottom: 2rem;
+        }
+
+        .players-input {
+            margin-bottom: 1rem;
+        }
+
+        .players-input label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .players-input input {
+            width: 80px;
+            padding: 0.5rem;
+            border: none;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.2rem;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+        }
+
+        .round-info {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .round-counter {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .event-format {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            font-style: italic;
+        }
+
+        .active-player-reminder {
+            font-size: 0.9rem;
+            color: #ffeb3b;
+            font-weight: bold;
+        }
+
+        .timer-display {
+            font-size: 4rem;
+            font-weight: bold;
+            margin: 2rem 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            font-family: 'Courier New', monospace;
+        }
+
+        .timer-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .time-preset {
+            padding: 0.7rem 1rem;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .time-preset:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .time-preset.active {
+            background: rgba(255, 255, 255, 0.4);
+            border-color: #ffeb3b;
+        }
+
+        .main-controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .control-btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 100px;
+        }
+
+        .start-btn {
+            background: #4caf50;
+            color: white;
+        }
+
+        .start-btn:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+
+        .pause-btn {
+            background: #ff9800;
+            color: white;
+        }
+
+        .pause-btn:hover {
+            background: #f57c00;
+            transform: translateY(-2px);
+        }
+
+        .reset-btn {
+            background: #f44336;
+            color: white;
+        }
+
+        .reset-btn:hover {
+            background: #da190b;
+            transform: translateY(-2px);
+        }
+
+        .next-round-btn {
+            background: #2196f3;
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .next-round-btn:hover {
+            background: #1976d2;
+            transform: translateY(-2px);
+        }
+
+        .election-day {
+            background: linear-gradient(45deg, #ff6b6b, #feca57);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { box-shadow: 0 0 20px rgba(255, 107, 107, 0.5); }
+            to { box-shadow: 0 0 30px rgba(254, 202, 87, 0.8); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 480px) {
+            .timer-container {
+                padding: 1.5rem;
+            }
+            
+            .timer-display {
+                font-size: 3rem;
+            }
+            
+            .main-controls {
+                flex-direction: column;
+            }
+            
+            .control-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="timer-container">
+        <h1 class="title">JD Test Timer</h1>
+        
+        <div class="game-info">
+            <div class="players-input">
+                <label for="playerCount">Number of Players (4-8):</label>
+                <input type="number" id="playerCount" min="4" max="8" value="4">
+            </div>
+        </div>
+
+        <div class="round-info">
+            <div class="round-counter" id="roundCounter">Round 1 of 9</div>
+
+            <div class="active-player-reminder" id="activePlayerReminder">👈 Pass marker left after round</div>
+        </div>
+
+        <div class="timer-display" id="timerDisplay">01:00</div>
+
+        <div class="timer-controls">
+            <button class="time-preset" data-time="30">30s</button>
+            <button class="time-preset" data-time="45">45s</button>
+            <button class="time-preset active" data-time="60">60s</button>
+            <button class="time-preset" data-time="90">90s</button>
+        </div>
+
+        <div class="main-controls">
+            <button class="control-btn start-btn" id="startBtn">Start</button>
+            <button class="control-btn pause-btn" id="pauseBtn">Pause</button>
+            <button class="control-btn reset-btn" id="resetBtn">Reset</button>
+        </div>
+
+        <button class="next-round-btn" id="nextRoundBtn">Next Round</button>
+    </div>
+
+    <script>
+        class JDTestTimer {
+            constructor() {
+                this.currentTime = 60;
+                this.selectedTime = 60;
+                this.isRunning = false;
+                this.interval = null;
+                this.currentRound = 1;
+                this.totalRounds = 9;
+                this.playerCount = 4;
+                
+
+                
+                this.initializeElements();
+                this.bindEvents();
+                this.updateDisplay();
+                this.updateGameInfo();
+            }
+
+            initializeElements() {
+                this.timerDisplay = document.getElementById('timerDisplay');
+                this.startBtn = document.getElementById('startBtn');
+                this.pauseBtn = document.getElementById('pauseBtn');
+                this.resetBtn = document.getElementById('resetBtn');
+                this.nextRoundBtn = document.getElementById('nextRoundBtn');
+                this.playerCountInput = document.getElementById('playerCount');
+                this.roundCounter = document.getElementById('roundCounter');
+                this.eventFormat = document.getElementById('eventFormat');
+                this.activePlayerReminder = document.getElementById('activePlayerReminder');
+                this.presetButtons = document.querySelectorAll('.time-preset');
+            }
+
+            bindEvents() {
+                this.startBtn.addEventListener('click', () => this.start());
+                this.pauseBtn.addEventListener('click', () => this.pause());
+                this.resetBtn.addEventListener('click', () => this.reset());
+                this.nextRoundBtn.addEventListener('click', () => this.nextRound());
+                
+                this.playerCountInput.addEventListener('change', (e) => {
+                    this.playerCount = parseInt(e.target.value);
+                    this.totalRounds = (this.playerCount * 2) + 1;
+                    this.currentRound = 1;
+                    this.updateGameInfo();
+                });
+
+                this.presetButtons.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        this.presetButtons.forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.selectedTime = parseInt(e.target.dataset.time);
+                        this.currentTime = this.selectedTime;
+                        this.updateDisplay();
+                    });
+                });
+            }
+
+            start() {
+                if (this.isRunning) return;
+                
+                this.isRunning = true;
+                this.startBtn.textContent = 'Running...';
+                this.startBtn.disabled = true;
+                
+                this.interval = setInterval(() => {
+                    this.currentTime--;
+                    this.updateDisplay();
+                    
+                    if (this.currentTime <= 0) {
+                        this.timeUp();
+                    }
+                }, 1000);
+            }
+
+            pause() {
+                if (!this.isRunning) return;
+                
+                this.isRunning = false;
+                clearInterval(this.interval);
+                this.startBtn.textContent = 'Start';
+                this.startBtn.disabled = false;
+            }
+
+            reset() {
+                this.pause();
+                this.currentTime = this.selectedTime;
+                this.updateDisplay();
+                this.startBtn.textContent = 'Start';
+                this.startBtn.disabled = false;
+            }
+
+            timeUp() {
+                this.pause();
+                this.playTimeUpSound();
+                alert('Time\'s up! ⏰');
+                this.reset();
+            }
+
+            nextRound() {
+                this.reset();
+                
+                if (this.currentRound < this.totalRounds) {
+                    this.currentRound++;
+                } else {
+                    // Game complete - restart
+                    this.currentRound = 1;
+                }
+                
+                this.updateGameInfo();
+            }
+
+            updateDisplay() {
+                const minutes = Math.floor(this.currentTime / 60);
+                const seconds = this.currentTime % 60;
+                this.timerDisplay.textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                // Change color when time is running low
+                if (this.currentTime <= 10 && this.isRunning) {
+                    this.timerDisplay.style.color = '#ff6b6b';
+                } else {
+                    this.timerDisplay.style.color = 'white';
+                }
+            }
+
+            updateGameInfo() {
+                const isElectionDay = this.currentRound === this.totalRounds;
+                
+                if (isElectionDay) {
+                    this.roundCounter.textContent = `ELECTION DAY!`;
+                    this.activePlayerReminder.textContent = "🗳️ Time to vote and declare the winner!";
+                    document.querySelector('.timer-container').classList.add('election-day');
+                } else {
+                    this.roundCounter.textContent = `Round ${this.currentRound} of ${this.totalRounds}`;
+                    this.activePlayerReminder.textContent = "👈 Pass marker left after round";
+                    document.querySelector('.timer-container').classList.remove('election-day');
+                }
+            }
+
+
+
+            playTimeUpSound() {
+                // Create a simple beep sound using Web Audio API
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.value = 800;
+                    oscillator.type = 'sine';
+                    
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 1);
+                } catch (e) {
+                    // Fallback if Web Audio API is not supported
+                    console.log('Audio notification not available');
+                }
+            }
+        }
+
+        // Initialize the timer when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new JDTestTimer();
+        });
+    </script>
+</body>
+</html>
